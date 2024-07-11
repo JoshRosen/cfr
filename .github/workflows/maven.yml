@@ -34,3 +34,61 @@ jobs:
       with:
         name: decompilation-test-failures-diff
         path: target/cfr-test-failures-diff
+
+  heavy-tests:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out Git repository
+      uses: actions/checkout@v2
+      with:
+        # Clone decompilation test data submodule
+        submodules: true
+
+    - name: Set up SDKMAN
+      uses: sdkman/sdkman-action@master
+      id: sdkman
+
+    - name: Install Java versions
+      run: |
+        sdk install java 6.0.119-zulu
+        sdk install java 8.0.392-zulu
+        sdk install java 11.0.21-zulu
+        sdk install java 12.0.2-zulu
+        sdk install java 13.0.14-zulu
+
+    - name: Set up Java HOME paths
+      run: |
+        echo "JAVA_6_HOME=/home/runner/.sdkman/candidates/java/6.0.119-zulu" >> $GITHUB_ENV
+        echo "JAVA_8_HOME=/home/runner/.sdkman/candidates/java/8.0.392-zulu" >> $GITHUB_ENV
+        echo "JAVA_11_HOME=/home/runner/.sdkman/candidates/java/11.0.21-zulu" >> $GITHUB_ENV
+        echo "JAVA_12_HOME=/home/runner/.sdkman/candidates/java/12.0.2-zulu" >> $GITHUB_ENV
+        echo "JAVA_13_HOME=/home/runner/.sdkman/candidates/java/13.0.14-zulu" >> $GITHUB_ENV
+
+    - name: Create Maven settings.xml
+      run: |
+        mkdir -p ~/.m2
+        echo "<settings>
+          <profiles>
+            <profile>
+              <id>compiler</id>
+                <properties>
+                  <JAVA_6_HOME>${{ env.JAVA_6_HOME }}</JAVA_6_HOME>
+                  <JAVA_8_HOME>${{ env.JAVA_8_HOME }}</JAVA_8_HOME>
+                  <JAVA_11_HOME>${{ env.JAVA_11_HOME }}</JAVA_11_HOME>
+                  <JAVA_12_HOME>${{ env.JAVA_12_HOME }}</JAVA_12_HOME>
+                  <JAVA_13_HOME>${{ env.JAVA_13_HOME }}</JAVA_13_HOME>
+                </properties>
+            </profile>
+          </profiles>
+          <activeProfiles>
+            <activeProfile>compiler</activeProfile>
+          </activeProfiles>
+        </settings>" > ~/.m2/settings.xml
+
+    - name: Run heavy-weight tests
+      run: |
+        git submodule update --init --recursive
+        mvn compile
+        export CFR_TARGET=$(pwd)/target/classes
