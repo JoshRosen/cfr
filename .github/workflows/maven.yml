@@ -49,6 +49,7 @@ jobs:
     - name: Install Java versions
       run: |
         export SDKMAN_DIR="$HOME/.sdkman" && curl -s "https://get.sdkman.io?rcupdate=false" | bash
+        echo "gvm_auto_answer=true" >> ~/.sdkman/etc/config
         source $HOME/.sdkman/bin/sdkman-init.sh
         sdk install java 6.0.119-zulu
         sdk install java 8.0.392-zulu
