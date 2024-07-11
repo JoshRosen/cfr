@@ -46,6 +46,14 @@ jobs:
         # Clone decompilation test data submodule
         submodules: true
 
+    - name: Cache SDKMan
+      uses: actions/cache@v3
+      with:
+        path: /home/runner/.sdkman/
+        key: ${{ runner.os }}-sdkman
+        restore-keys: |
+          ${{ runner.os }}-sdkman
+
     - name: Install Java versions
       run: |
         export SDKMAN_DIR="$HOME/.sdkman" && curl -s "https://get.sdkman.io?rcupdate=false" | bash
@@ -54,8 +62,8 @@ jobs:
         sdk install java 6.0.119-zulu
         sdk install java 8.0.392-zulu
         sdk install java 11.0.21-zulu
-        sdk install java 12.0.2-zulu
-        sdk install java 13.0.14-zulu
+#        sdk install java 12.0.2-zulu
+#        sdk install java 13.0.14-zulu
 
     - name: Set up Java HOME paths
       run: |
